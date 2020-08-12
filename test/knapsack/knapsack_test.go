@@ -11,25 +11,32 @@ func TestKnapsack(t *testing.T) {
 	var priceAllZero bool
 	priceAllZero = false
 	places := make([]matching.Place, 20, 20)
-	err := utils.ReadFromFile("../../test_visit_random_gen.json", &places)
+	err := utils.ReadFromFile("data/test_visit_random_gen.json", &places)
 	if err != nil || len(places) == 0 {
-		t.Error("Json file read error")
+		t.Fatal("Json file read error")
 	}
-	t.Log(len(places))
-	t.Log(cap(places))
+	t.Logf("number of places from the input is %d", len(places))
 	for _, p := range places {
 		if p.Price != 0.0 {
 			priceAllZero = true
 		}
 	}
 	if !priceAllZero {
-		t.Error("All price is Zero.")
+		t.Fatal("all the prices are zero.")
 	}
-	result := matching.Knapsack(places, 35, 1500)
+	timeLimit := uint8(8)
+	budget := uint(80)
+	result := matching.KnapsackV1(places, timeLimit, budget)
 	if len(result) == 0 {
 		t.Error("No result is returned.")
 	}
-	result2 := matching.Knapsackv2(places, 35, 1500)
+	result2, totalCost, totalTimeSpent := matching.Knapsack(places, timeLimit, budget)
+	t.Logf("total cost of the trip is %d", totalCost)
+	t.Logf("total time of the trip is %d", totalTimeSpent)
+
+	assert.LessOrEqual(t, totalTimeSpent, timeLimit, "")
+	assert.LessOrEqual(t, totalCost, budget, "")
+
 	if len(result) == 0 {
 		t.Error("No result is returned by v2")
 	}
@@ -49,8 +56,6 @@ func TestKnapsack(t *testing.T) {
 			t.Error("v2 result is not the same")
 		}
 	}
-	assert.Equal(t,result2[0].PlaceId, "ChIJkwQn2FnxNIgRXbZ_Wu4cdL0", "Assert result[0] is expected")
-	assert.Equal(t,result2[2].PlaceId, "ChIJr7aBzePzNIgRi2Dp2ZCFmUY", "Assert result[2] is expected")
-	assert.Equal(t,result2[4].PlaceId, "ChIJTfpr7Qj0NIgRdO4BjOIRB0c", "Assert result[4] is expected")
-	print(result)
+	assert.Equal(t,"ChIJkwQn2FnxNIgRXbZ_Wu4cdL0", result2[0].PlaceId, "Assert result[0] is expected")
+	assert.Equal(t,"ChIJXzT5vqv2NIgRfqEmldPesjc", result2[2].PlaceId, "Assert result[2] is expected")
 }
